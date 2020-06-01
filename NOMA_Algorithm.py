@@ -90,3 +90,5 @@ def AlgoritmoAgrupacion4NOMA():
 #Ejecución del algoritmo para la agrupación NOMA
 AlgoritmoAgrupacion4NOMA()
 
+# Nueva línea
+
