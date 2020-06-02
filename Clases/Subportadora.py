@@ -6,5 +6,5 @@ import copy
 
 class Subportadora(object):
     def __init__(self, id):
-        self.id = id        #Identificador
+        self.id = id        #Identificador para cada suubportadora
 
