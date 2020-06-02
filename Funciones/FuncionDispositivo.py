@@ -15,6 +15,7 @@ def creardispositivos(numeroDispositivos, tipo, PLE, radio_celula):
         ple = PLE
         #Implementacion de desvanecimiento tipo Rayleigh
         rayleighGain = random.expovariate(1)
+        #TODO calcular 48 y sacar el promedio
         h = (d ** (-ple)) * rayleighGain
         dispositivos.append(Dispositivo(disp, tipo, 0, d, h, 0, .2))
 

@@ -18,7 +18,7 @@ from Funciones.FuncionDispositivo import creardispositivos
 from Clases.Simulacion import Simulacion
 
 #Creación de Objetos para la simulación
-DESsim = Simulacion(144, 48, 0, 3, 500)
+DESsim = Simulacion(144, 48, 0, 3, 500) # [usuarios mMTC,usuarios URLLC,umbral arribos,PLE,radiocelula]
 NBIoT = NB_IoT(48, [], [], mth.sqrt(np.random.uniform(.1, 20)) * 1e3, mth.sqrt(np.random.uniform(.1, 2)) * 1e3, [], 48, [], 50, [], 150, [], 0, [], 4, 3.75e3, 5.012e-21)
 
 #Creacion de Dispositivos URLLC
@@ -49,6 +49,7 @@ def AlgoritmoAgrupacion4NOMA():
         else:
             # Si el número de dispositivos uRLLC [U] es mayor que el numero de grupos NOMA [C], los dispositivos sobrantes
             # serán asignados a los siguientes rangos del grupo
+            # TODO HARD CODED, sólo funciona para dispositivos entre 48 y 96
             NBIoT.C[indicePos2Grupo].dispositivos[0][1] = NBIoT.U[0][deviceURLLC]
             NBIoT.U[0][deviceURLLC].alpha = 1
             indicePos2Grupo = indicePos2Grupo + 1
