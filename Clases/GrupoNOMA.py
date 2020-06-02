@@ -12,7 +12,7 @@ class GrupoNOMA(object):
         self.Rm = Rm            #Tasa de transmisión de dispositivos MTC acumulada por grupo
         self.RTotal = RTotal    #RTotal acumula las tasas de cada dispositivo por grupo y asi obtener la tasa alcanzada por grupo
         self.gamma = gamma      #Variable binaria que indica la asignación de un cluster para una subportadora
-        self.Sac_C = Sac      #Conjunto de subportadoras asignadas a un cluster C
+        self.Sac = Sac      #Conjunto de subportadoras asignadas a un cluster C
         #self.Sac_Cns = Sac_Cns  #Conjunto de subportadoras asignadas a un cluster Cns
 
 

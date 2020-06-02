@@ -137,14 +137,11 @@ def AlgoritmoAsignacionRecursos():
     #Actualización de variable binaria gamma
     NBIoT.Cns[NBIoT.id_c].gamma = 1
 
-    #Actualizar lista de subportadoras asignadas al cluster Sac Cns
-    #NBIoT.Cns[NBIoT.id_c].Sac
+    #Actualizar lista de subportadoras asignadas al cluster Sac
 
     #Actualizar lista de S' (Sv)
 
-
     #Actualización de Tasas del mejor grupo NOMA
-
 
     #Actualización de Potencias del mejor grupo NOMA
 
@@ -183,6 +180,9 @@ def busquedaMejorGrupoNOMA():
     #Asignación de c*
     NBIoT.c_ = NBIoT.Cns[cluster]
     return NBIoT.Cns[cluster].id
+
+
+#def validacionTasasURLLC():
 
 
 AlgoritmoAsignacionRecursos()
