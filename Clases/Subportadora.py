@@ -5,6 +5,9 @@ import operator
 import copy
 
 class Subportadora(object):
-    def __init__(self, id):
-        self.id = id        #Identificador para cada suubportadora
+    def __init__(self, id, idGrupo, GrupoNOMA):
+        self.id = id                #Identificador para cada suubportadora
+        self.idGrupo = idGrupo      #Identificador grupo NOMA
+        self.GrupoNOMA = GrupoNOMA  #Grupo NOMA
+
 
