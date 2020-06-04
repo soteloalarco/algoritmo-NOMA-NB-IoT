@@ -5,13 +5,12 @@ import operator
 import copy
 
 class NB_IoT(object):
-    def __init__(self, numS, S, Sv, Ruth, Rmth, Cns, numC, C, numU, U, numM, M, id_c, c_, kmax, BW, No):
+    def __init__(self, numS, S, Sv, Clusters, Cns, numC, C, numU, U, numM, M, id_c, c_, kmax, BW, No):
         self.numS = numS    #Numero de subportadoras
         self.S = S          #Lista de subportadoras
         self.Sv = Sv        #Conjunto de subportadoras eliminadas
         # Tasas a satisfacer para dispositivos URLLC y mMTC
-        self.Ruth = Ruth    #Umbral de tasa para dispositivos URLLC por alcanzar
-        self.Rmth = Rmth    #Umbral de tasa para dispositivos MTC por alcanzar
+        self.Clusters = Clusters
         self.Cns = Cns      #Lista de grupos NOMA con tasas insatisfechas
         self.numC = numC    #Numero de grupos NOMA
         self.C = C          #Lista de Grupos NOMA
