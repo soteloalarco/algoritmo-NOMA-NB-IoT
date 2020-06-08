@@ -1,16 +1,9 @@
-import numpy as np
-import math as mth
-import random
-import operator
-import copy
-
 class NB_IoT(object):
-    def __init__(self, numS, S, Sv, Clusters, Cns, numC, C, numU, U, numM, M, id_c, c_, kmax, BW, No):
+    def __init__(self, numS, S, Sv, Agrupaciones, Cns, numC, C, numU, U, numM, M, id_c, c_, kmax, BW, No):
         self.numS = numS    #Numero de subportadoras
         self.S = S          #Lista de subportadoras
         self.Sv = Sv        #Conjunto de subportadoras eliminadas
-        # Tasas a satisfacer para dispositivos URLLC y mMTC
-        self.Clusters = Clusters
+        self.Agrupaciones = Agrupaciones
         self.Cns = Cns      #Lista de grupos NOMA con tasas insatisfechas
         self.numC = numC    #Numero de grupos NOMA
         self.C = C          #Lista de Grupos NOMA
@@ -23,4 +16,3 @@ class NB_IoT(object):
         self.kmax = kmax    #Máxima capacidad de grupo NOMA
         self.BW = BW        #Ancho de banda por bloque de recurso (Subportadora)
         self.No = No        #Densidad de potencia spectral -173 dBm/Hz,
-

@@ -1,9 +1,3 @@
-import numpy as np
-import math as mth
-import random
-import operator
-import copy
-
 class Simulacion(object):
     def __init__(self, umbralArribos, PLE, r_cell):
         self.umbralArribos = umbralArribos          #Umbral de arribos para paro de la simulación
