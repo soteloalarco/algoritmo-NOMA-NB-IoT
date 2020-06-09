@@ -9,8 +9,8 @@ from Clases.Simulacion import Simulacion
 # Variables de entrada
 RadioCelular = 500
 PLE = 3
-NumDispositivosURLLC = 40
-NumDispositivosMTC = 30
+NumDispositivosURLLC = 48
+NumDispositivosMTC = 200
 kmax = 4
 
 #Creación de Objetos para la simulación
@@ -115,6 +115,7 @@ AlgoritmoAgrupacionNOMA()
 
 
 #  *******************************************  Algoritmo para la asignación de recursos NOMA (subportadoras) **********************************************
+#TODO implementar meno cluter que 48
 def AlgoritmoAsignacionRecursos():
     NBIoT.Sv = 0
     # Conjunto de clusters de dispositivos con tasas insatisfechas
@@ -126,6 +127,7 @@ def AlgoritmoAsignacionRecursos():
     Ciclos = 0
     #Inicio del bucle del algoritmo de asignación de recursos
     while True:
+        # TODO checar eta condicón y cambiarla por una en la que se acaben las subportadores
         if (len(NBIoT.Agrupaciones) == NBIoT.numS):
             break
 
@@ -138,6 +140,7 @@ def AlgoritmoAsignacionRecursos():
                 for cluster in range(0, NBIoT.numC):
                     #Validación de que el cluster ya esté asignado a una subportadora
                     NBIoT.S[subportadora].C[cluster].RTotal = 0
+                    #TODO Cambiar la condición a una como en el algoritmo, que c este en Cns
                     if NBIoT.S[subportadora].C[cluster].Subcarrier == []:
                         # For para recorrer los rangos del grupo
                         for device in range(0, NBIoT.kmax):
@@ -151,14 +154,17 @@ def AlgoritmoAsignacionRecursos():
 
                 #Grupo NOMA que maximiza la tasa
                 NBIoT.S[subportadora].c_ = busquedaMejorGrupoNOMA(subportadora)
+                #Checar esto
                 if NBIoT.S[subportadora].c_ == 49:
                     print("Ciclos en el while: ", Ciclos)
                     return 0
 
                 #Actualizar lista de subportadoras asignadas al cluster Sac
+                #TODO implementar la S^ para tener regitro de las s que quedan
                 NBIoT.S[subportadora].C[NBIoT.S[subportadora].c_].Sac.append(NBIoT.S[subportadora].id)
                 Sac = len(NBIoT.S[subportadora].C[NBIoT.S[subportadora].c_].Sac)
 
+                #TODO Actualizar las tasas des dispositivos en el cluter c* que gano la subportadora
                 #Actualización de Potencias del mejor grupo NOMA
                 actualizacionPotenciasc_(NBIoT.S[subportadora].c_, NBIoT.S[subportadora].id, Sac)
 
@@ -177,12 +183,19 @@ def AlgoritmoAsignacionRecursos():
                 if condicion == True:
                     # Asignación de subportadora s a grupos NOMA
                     for sb in range(0, NBIoT.numS):
+                        #TODO es esto equivalente a actualizar Sca ? en el algoritmo agregramo el cluster a lo que cumplen su tasa
                         NBIoT.S[sb].C[NBIoT.S[subportadora].c_].Subcarrier = [NBIoT.S[subportadora].id]
-                    # Asignación de grupo NOMA a subportadora s
+                    #TODO esto entiendo que debe ir fuera del if, ya que s se asigna a c* no importando que no se cumpla su tasa
+                    ## Asignación de grupo NOMA a subportadora s
                     NBIoT.S[subportadora].Cluster = [NBIoT.S[subportadora].c_]
                     #Asignacion de s y c por medio de sus ids en lista Agrupaciones
                     NBIoT.Agrupaciones.append([NBIoT.S[subportadora].id, NBIoT.S[subportadora].c_])
+                    #TODO quitar a  c_ de los cluters que no han cumplido su tasa Cns
 
+                    #TODO agregar  s a S^ o de alguna manera limitar que esa ssubportadora ya no se encuentra disponible
+
+
+        #TODO Tal vez implementar la segunda parte, donde se asignan las subportadoras sobrantes
 
 #Funciones que se utilizan en algoritmo de asignación de recursos
 

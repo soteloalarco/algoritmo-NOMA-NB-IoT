@@ -10,3 +10,15 @@
 .idea/inspectionProfiles/profiles_settings.xml
 
 .idea/algoritmo-NOMA-NB-IoT.iml
+
+Funciones/__pycache__/FuncionDispositivo.cpython-36.pyc
+
+Clases/__pycache__/Dispositivo.cpython-36.pyc
+
+Clases/__pycache__/GrupoNOMA.cpython-36.pyc
+
+Clases/__pycache__/NB_IoT.cpython-36.pyc
+
+Clases/__pycache__/Simulacion.cpython-36.pyc
+
+Clases/__pycache__/Subportadora.cpython-36.pyc
