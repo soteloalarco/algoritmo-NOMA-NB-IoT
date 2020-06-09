@@ -11,16 +11,17 @@ def creardispositivos(numeroDispositivos, tipo, PLE, radio_celula, numeroSubport
 
         #Creación de ganancias por cada subportadora
         h = []
+        # Usuarios uniformemente distribuidos dentro de la celda entre .1 a 500m
+        # Calculo de distancia del UE a la BS
+        d = mth.sqrt(np.random.uniform(0, 1) * (radio_celula ** 2))
+        ple = PLE
+
         for gain in range(0, numeroSubportadoras):
-            # Usuarios uniformemente distribuidos dentro de la celda entre .1 a 500m
-            ple = PLE
             #Implementacion de desvanecimiento tipo Rayleigh
             rayleighGain = random.expovariate(1)
-
-            # Calculo de distancia del UE a la BS
-            d = mth.sqrt(np.random.uniform(0, 1) * (radio_celula ** 2))
             h.append((d ** (-ple)) * rayleighGain)
         h2 = sum(h)
+
         #Ganancia Promedio
         h_ = h2 / numeroSubportadoras
 
@@ -35,8 +36,8 @@ def creardispositivos(numeroDispositivos, tipo, PLE, radio_celula, numeroSubport
         elif tipo == 2:
             Rth = np.random.uniform(100, 2e3)
 
-        #Se crea el dispositivo de acuerdocon las caracteristicas establecidas
-        dispositivos.append(Dispositivo(disp, tipo, 0, h_, h, 0, Px, Rth))
+        #Se crea el dispositivo de acuerdo con las caracteristicas establecidas
+        dispositivos.append(Dispositivo(disp, tipo, 0, d, h_, h, 0, Px, Rth))
 
     # Ordenamiento de dispositivos con base en sus ganancia promedio de canal (descendentemente)
     dispositivosorted = sorted(dispositivos, key=operator.attrgetter('h_'), reverse=True)
