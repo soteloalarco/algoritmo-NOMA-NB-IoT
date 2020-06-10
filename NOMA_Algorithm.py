@@ -9,13 +9,14 @@ from Clases.Simulacion import Simulacion
 # Variables de entrada
 RadioCelular = 500
 PLE = 3
-NumDispositivosURLLC = 48
+NumDispositivosURLLC = 53
 NumDispositivosMTC = 200
 kmax = 4
+Numero_clusters = 30
 
 #Creación de Objetos para la simulación
 DESsim = Simulacion(0, PLE, RadioCelular, 0) #error con 100 y 300
-NBIoT = NB_IoT(48, [], [], [], [], 48, [], NumDispositivosURLLC, [], NumDispositivosMTC, [], 0, [], kmax, 3.75e3, 5.012e-21)
+NBIoT = NB_IoT(48, [], [], [], [], Numero_clusters, [], NumDispositivosURLLC, [], NumDispositivosMTC, [], 0, [], kmax, 3.75e3, 5.012e-21)
 #Creacion de Dispositivos URLLC
 NBIoT.U.append(creardispositivos(NBIoT.numU, 1, DESsim.PLE, DESsim.r_cell, NBIoT.numS))
 #Creacion de Dispositivos mMTC
@@ -66,7 +67,7 @@ def AlgoritmoAgrupacionNOMA():
         cerosEliminar = indicePos2Grupo
         # k _= es una variable que indica en que rango se quedó asignado el ultimo dispositivo URLLC
         k_= 1
-        if indicePos2Grupo == NBIoT.numS:
+        if indicePos2Grupo == NBIoT.numC:####
            indiceAsignacionCluster = 0
            cerosEliminar=0
            k_ = 2
@@ -75,7 +76,7 @@ def AlgoritmoAgrupacionNOMA():
         cerosEliminar = indicePos1Grupo
         k_=0
 
-        if indiceAsignacionCluster != 48:
+        if indiceAsignacionCluster != NBIoT.numC:######
             #TODO implementar esto para un numero de clusters variable no fijo
             for cn in range(indiceAsignacionCluster, int(NBIoT.numC)):
                 NBIoT.C.append(GrupoNOMA(cn, [], False, 0, 0, 0, 1, [], []))
@@ -100,7 +101,7 @@ def AlgoritmoAgrupacionNOMA():
         NBIoT.M[0][deviceMTC].alphabeta = 1
         indiceAsignacionCluster = indiceAsignacionCluster + 1
 
-        if indiceAsignacionCluster == (NBIoT.numS):
+        if indiceAsignacionCluster == (NBIoT.numC):######
             k_ = k_ + 1
             indiceAsignacionCluster = 0
             if k_ == NBIoT.kmax:
@@ -201,6 +202,7 @@ def AlgoritmoAsignacionRecursos():
             #Asignacion de s y c por medio de sus ids en lista Agrupaciones
             NBIoT.Agrupaciones.append([NBIoT.S[subportadora].id, ID_cluster_c])
 
+            NBIoT.Cns[ID_cluster_c] = 0
             #TODO quitar a  c_ de los cluters que no han cumplido su tasa Cns
             #Limpiar Lista de Cns ya asignadas
             for clus in range(0, len(NBIoT.Cns)):
@@ -211,7 +213,7 @@ def AlgoritmoAsignacionRecursos():
         #TODO agregar  s a S^ o de alguna manera limitar que esa ssubportadora ya no se encuentra disponible
         #Buscar cual fue la subportadora que se asignó
 
-        NBIoT.S[subportadora] == 0
+        NBIoT.S[subportadora] = 0
 
     #Limpiar Lista de Subportadoras ya asignadas
     sub = 0
@@ -292,9 +294,9 @@ def validacionTasas(ListaClusters, cluster):
     for device in range(0, NBIoT.kmax):
         # Validación de que algun rango del cluster está vacio o desocupado
         if ListaClusters[cluster].dispositivos[0][device] != False:
-            if (ListaClusters[cluster].dispositivos[0][device].Rx) < (ListaClusters[cluster].dispositivos[0][device].Rth):
+            if (ListaClusters[cluster].dispositivos[0][device].Rs) < (ListaClusters[cluster].dispositivos[0][device].Rth):
                 return False
     return True
 
-AlgoritmoAsignacionRecursos()
+#AlgoritmoAsignacionRecursos()
 NBIoT.Agrupaciones.sort()
