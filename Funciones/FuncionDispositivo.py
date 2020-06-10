@@ -37,7 +37,7 @@ def creardispositivos(numeroDispositivos, tipo, PLE, radio_celula, numeroSubport
             Rth = np.random.uniform(100, 2e3)
 
         #Se crea el dispositivo de acuerdo con las caracteristicas establecidas
-        dispositivos.append(Dispositivo(disp, tipo, 0, d, h_, h, 0, Px, Rth))
+        dispositivos.append(Dispositivo(disp, tipo, 0, d, h_, h, 0, 0, Px, Rth))
 
     # Ordenamiento de dispositivos con base en sus ganancia promedio de canal (descendentemente)
     dispositivosorted = sorted(dispositivos, key=operator.attrgetter('h_'), reverse=True)
