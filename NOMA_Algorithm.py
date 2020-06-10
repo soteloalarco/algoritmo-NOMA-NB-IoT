@@ -9,13 +9,13 @@ from Clases.Simulacion import Simulacion
 # Variables de entrada
 RadioCelular = 500
 PLE = 3
-NumDispositivosURLLC = 53
+NumDispositivosURLLC = 40
 NumDispositivosMTC = 200
 kmax = 4
-Numero_clusters = 30
+Numero_clusters = 48
 
 #Creación de Objetos para la simulación
-DESsim = Simulacion(0, PLE, RadioCelular, 0) #error con 100 y 300
+DESsim = Simulacion(0, PLE, RadioCelular, 0)
 NBIoT = NB_IoT(48, [], [], [], [], Numero_clusters, [], NumDispositivosURLLC, [], NumDispositivosMTC, [], 0, [], kmax, 3.75e3, 5.012e-21)
 #Creacion de Dispositivos URLLC
 NBIoT.U.append(creardispositivos(NBIoT.numU, 1, DESsim.PLE, DESsim.r_cell, NBIoT.numS))
@@ -178,7 +178,7 @@ def AlgoritmoAsignacionRecursos():
         #NO COINCIDO EN ESTE "TO DO", YO ACTUALIZO LAS TASAS UNA VEZ QUE SUS POTENCIAS SE HAYAN ACTUALIZADO
 
         #Actualización de Potencias del mejor grupo NOMA
-        actualizacionPotenciasc_(NBIoT.Cns ,ID_cluster_c, NBIoT.S[subportadora].id, Sac)
+        NBIoT.Cns = actualizacionPotenciasc_(NBIoT.Cns,ID_cluster_c, NBIoT.S[subportadora].id, Sac)
 
         # Actualización de Tasas del mejor grupo NOMA
         for device in range(0, NBIoT.kmax):
@@ -188,7 +188,7 @@ def AlgoritmoAsignacionRecursos():
                 R = calculoTasaTx(Interferencias, NBIoT.Cns, subportadora, ID_cluster_c, device)
                 NBIoT.Cns[ID_cluster_c].dispositivos[0][device].Rx = R
 
-        actualizacionTasasc_(NBIoT.Cns, ID_cluster_c)
+        NBIoT.Cns = actualizacionTasasc_(NBIoT.Cns, ID_cluster_c)
 
         # Validación del cumplimiento de tasas del mejor grupo NOMA c_ (c*)
         condicion = validacionTasas(NBIoT.Cns, ID_cluster_c)
@@ -200,7 +200,7 @@ def AlgoritmoAsignacionRecursos():
             #Aqui asignar a los Sac*********
 
             #Asignacion de s y c por medio de sus ids en lista Agrupaciones
-            NBIoT.Agrupaciones.append([NBIoT.S[subportadora].id, ID_cluster_c])
+            NBIoT.Agrupaciones.append([NBIoT.S[subportadora], NBIoT.Cns[ID_cluster_c]])
 
             NBIoT.Cns[ID_cluster_c] = 0
             #TODO quitar a  c_ de los cluters que no han cumplido su tasa Cns
@@ -251,11 +251,10 @@ def calculoTasaTx(Interferencias, ListaClusters,  subportadora, cluster, device)
 # Esta función busca el mejor grupo NOMA, es decir, el que maximize la tasa con base en las tasas que logra cada cluster (Rtotal)
 def busquedaMejorGrupoNOMA(ListaClusters):
     buscargrupo = max(GrupoNOMA.RTotal for GrupoNOMA in ListaClusters)
-    for cluster in range(0, len(NBIoT.Cns)):
+    for cluster in range(0, NBIoT.numC):
         #Se busca el identificador del mejor grupo
         if ListaClusters[cluster].RTotal == buscargrupo:
             break
-    #Asignación de c*
     return ListaClusters[cluster].id
 
 #Como la lista Cns es dinámica los indices van a ir cambiendo por lo que el id no correspondrá con el indice por eso se busca su id
@@ -264,7 +263,7 @@ def busquedaIDCns(ListaClusters, ID):
         #Se busca el identificador del cluster
         if ListaClusters[cluster].id == ID:
             break
-    return ListaClusters[cluster].id
+    return cluster
 
 #Como la lista S es dinámica los indices van a ir cambiendo por lo que el id no correspondrá con el indice por eso se busca su id
 def busquedaIDSub(ListaSubportadoras, ID):
@@ -272,7 +271,7 @@ def busquedaIDSub(ListaSubportadoras, ID):
         # Se busca el identificador de la subportadora
         if ListaSubportadoras[subportadora].id == ID:
             break
-    return ListaSubportadoras[subportadora].id
+    return subportadora
 
 #Se actualizan las tasas de los dispositivos de acuerdo
 def actualizacionTasasc_(ListaClusters, cluster):
@@ -281,6 +280,7 @@ def actualizacionTasasc_(ListaClusters, cluster):
         if ListaClusters[cluster].dispositivos[0][device] != False:
             # Rx va ir cambiando en cada dispositivo entonces por eso se crea un nuevo campo Rs que indica la suma acumulada por subportadora
             ListaClusters[cluster].dispositivos[0][device].Rs = ListaClusters[cluster].dispositivos[0][device].Rs + ListaClusters[cluster].dispositivos[0][device].Rx
+    return ListaClusters
 
 #Función que actualiza las potencias de los dispositivos de un determinado cluster de acuerdo con Sac
 def actualizacionPotenciasc_(ListaClusters, cluster, subportadora, Sac):
@@ -288,6 +288,7 @@ def actualizacionPotenciasc_(ListaClusters, cluster, subportadora, Sac):
         # Validación de que algun rango del cluster está vacio o desocupado
         if ListaClusters[cluster].dispositivos[0][device] != False:
             ListaClusters[cluster].dispositivos[0][device].Px[subportadora] = ListaClusters[cluster].dispositivos[0][device].Px[subportadora] / ( Sac + 1)
+    return ListaClusters
 
 #Función que checa que las tasas de los dispositivos sean satisfacidas
 def validacionTasas(ListaClusters, cluster):
@@ -298,5 +299,5 @@ def validacionTasas(ListaClusters, cluster):
                 return False
     return True
 
-#AlgoritmoAsignacionRecursos()
-NBIoT.Agrupaciones.sort()
+AlgoritmoAsignacionRecursos()
+#NBIoT.Agrupaciones.sort()
