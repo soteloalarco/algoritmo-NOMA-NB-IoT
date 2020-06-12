@@ -9,8 +9,8 @@ from Clases.Simulacion import Simulacion
 # Variables de entrada
 RadioCelular = 500
 PLE = 3
-NumDispositivosURLLC = 40
-NumDispositivosMTC = 200
+NumDispositivosURLLC = 48
+NumDispositivosMTC = 100
 kmax = 4
 Numero_clusters = 48
 
