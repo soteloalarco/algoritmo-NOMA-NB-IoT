@@ -130,12 +130,13 @@ def AlgoritmoAsignacionRecursos():
     DESsim.Ciclos = 0
 
     #Inicio del bucle del algoritmo de asignación de recursos
+    #Validación de todas las tasas de los usuarios
+
     #while True:
-    #    # TODO checar eta condicón y cambiarla por una en la que se acaben las subportadores
-    #    if (NBIoT.S == []):
+    #    if ((NBIoT.S == []) and (Cns == [])):
     #        break
 
-
+    #Ciclos que toma la asignación
     DESsim.Ciclos = DESsim.Ciclos + 1
 
     NBIoT.numS = len(NBIoT.S)
@@ -145,11 +146,12 @@ def AlgoritmoAsignacionRecursos():
         NBIoT.S[subportadora].c_ = []
         NBIoT.Sv = []
         NBIoT.numC = len(NBIoT.Cns)
+
         # For para recorrer los grupos NOMA no satisfechos (Cns)
-        # TODO Cambiar la condición a una como en el algoritmo, que c este en Cns
         for cluster in range(0, NBIoT.numC):
             #Inicilalización a cero de las tasas totales de cada cluster
             NBIoT.Cns[cluster].RTotal = 0
+
             # For para recorrer todos los rangos del grupo NOMA
             for device in range(0, NBIoT.kmax):
                 #Validación de que algun rango del cluster está vacio o desocupado
@@ -171,14 +173,11 @@ def AlgoritmoAsignacionRecursos():
 
         Sac = len(NBIoT.Cns[ID_cluster_c].Sac)
 
-        # TODO implementar la S^ para tener regitro de las s que quedan
+        #S^ para tener regitro de las s que quedan
         NBIoT.Sv.append(NBIoT.S[subportadora].id)
 
-        #TODO Actualizar las tasas des dispositivos en el cluter c* que gano la subportadora
-        #NO COINCIDO EN ESTE "TO DO", YO ACTUALIZO LAS TASAS UNA VEZ QUE SUS POTENCIAS SE HAYAN ACTUALIZADO
-
         #Actualización de Potencias del mejor grupo NOMA
-        NBIoT.Cns = actualizacionPotenciasc_(NBIoT.Cns,ID_cluster_c, NBIoT.S[subportadora].id, Sac)
+        NBIoT.Cns = actualizacionPotenciasc_(NBIoT.Cns, ID_cluster_c, NBIoT.S[subportadora].id, Sac)
 
         # Actualización de Tasas del mejor grupo NOMA
         for device in range(0, NBIoT.kmax):
@@ -195,24 +194,18 @@ def AlgoritmoAsignacionRecursos():
 
         # Retribución de subportadora a cluster de acuerdo con c* en caso de que se cumplan los umbrales de las tasas
         if condicion == True:
-            # Asignación de subportadora s a grupo NOMA
-            #TODO es esto equivalente a actualizar Sca ? en el algoritmo agregramo el cluster a lo que cumplen su tasa
-            #Aqui asignar a los Sac*********
-
             #Asignacion de s y c por medio de sus ids en lista Agrupaciones
-            NBIoT.Agrupaciones.append([NBIoT.S[subportadora], NBIoT.Cns[ID_cluster_c]])
-
+            NBIoT.Agrupaciones.append([NBIoT.Cns[ID_cluster_c]])
+            # Asignación de grupo NOMA Cns
             NBIoT.Cns[ID_cluster_c] = 0
-            #TODO quitar a  c_ de los cluters que no han cumplido su tasa Cns
+            #Quitar a  c_ de los cluters que no han cumplido su tasa Cns
             #Limpiar Lista de Cns ya asignadas
             for clus in range(0, len(NBIoT.Cns)):
                 if NBIoT.Cns[clus] == 0:
                     del NBIoT.Cns[clus]
                     break
 
-        #TODO agregar  s a S^ o de alguna manera limitar que esa ssubportadora ya no se encuentra disponible
-        #Buscar cual fue la subportadora que se asignó
-
+        # Asignación de subportadora s
         NBIoT.S[subportadora] = 0
 
     #Limpiar Lista de Subportadoras ya asignadas
@@ -225,8 +218,12 @@ def AlgoritmoAsignacionRecursos():
         else:
             sub += 1
 
-    #TODO Tal vez implementar la segunda parte, donde se asignan las subportadoras sobrantes
-    #Validación de todas las tasas de los usuarios
+    #Validación si todas las tasas de los usuarios C se han cumplido
+    #if (NBIoT.Cns == []):
+
+
+
+    #Asignación de las subportadoras sobrantes
 
 
 
