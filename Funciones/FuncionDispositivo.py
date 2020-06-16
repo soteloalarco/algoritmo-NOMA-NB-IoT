@@ -2,6 +2,7 @@ import numpy as np
 import math as mth
 import random
 import operator
+from scipy.stats import expon
 from Clases.Dispositivo import Dispositivo
 
 def creardispositivos(numeroDispositivos, tipo, PLE, radio_celula, numeroSubportadoras):
@@ -18,6 +19,8 @@ def creardispositivos(numeroDispositivos, tipo, PLE, radio_celula, numeroSubport
 
         for gain in range(0, numeroSubportadoras):
             #Implementacion de desvanecimiento tipo Rayleigh
+            #rayleighGain = expon.rvs(loc=0, scale=1, size=1, random_state=None)
+            #rayleighGain = np.random.rayleigh(scale=1.0, size=None)
             rayleighGain = random.expovariate(1)
             h.append((d ** (-ple)) * rayleighGain)
         h2 = sum(h)
