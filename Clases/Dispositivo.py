@@ -8,6 +8,6 @@ class Dispositivo(object):
         self.h_ = h_        #Ganancia de canal promedio
         self.h = h          #Ganancias de canal por subportadora
         self.Rx = Rx        #Tasa de transmisión
-        self.Rs = Rs        #Suma de tasas por subportadora
+        self.Rs = Rs        #Suma acumulada de tasas de tx por subportadora
         self.Px = Px        #Potencia de transmisión
         self.Rth = Rth      #Umbral de tasa para dispositivos

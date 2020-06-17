@@ -5,18 +5,23 @@ from Clases.Subportadora import Subportadora
 from Clases.NB_IoT import NB_IoT
 from Funciones.FuncionDispositivo import creardispositivos
 from Clases.Simulacion import Simulacion
+import sys
 
 # Variables de entrada
 RadioCelular = 500
 PLE = 3
+
+#NumDispositivosURLLC = int(sys.argv[1]) / 4
+#NumDispositivosMTC = int(sys.argv[1]) - (int(sys.argv[1]) / 4)
+
 NumDispositivosURLLC = 48
-NumDispositivosMTC = 150
+NumDispositivosMTC = 200
 kmax = 4
-Numero_clusters = 48
+Numero_clusters = 47
 
 #Creación de Objetos para la simulación
-DESsim = Simulacion(0, PLE, RadioCelular, 0)
-NBIoT = NB_IoT(48, [], [], [], [], Numero_clusters, [], NumDispositivosURLLC, [], NumDispositivosMTC, [], 0, [], kmax, 3.75e3, 5.012e-21)
+DESsim = Simulacion(0, PLE, RadioCelular)
+NBIoT = NB_IoT(48, [], [], [], [], Numero_clusters, [], int(NumDispositivosURLLC), [], int(NumDispositivosMTC), [], 0, [], kmax, 3.75e3, 5.012e-21)
 #Creacion de Dispositivos URLLC
 NBIoT.U.append(creardispositivos(NBIoT.numU, 1, DESsim.PLE, DESsim.r_cell, NBIoT.numS))
 #Creacion de Dispositivos mMTC
@@ -38,7 +43,7 @@ def AlgoritmoAgrupacionNOMA():
         # deviceURLLC corresponde al número de dispositivos uRLLC [U]
         if deviceURLLC < NBIoT.numC:
             # Asignar los dispositivos uRLLC a rangos bajos de los primeros grupos
-            NBIoT.C.append(GrupoNOMA(deviceURLLC, [], False, 0, 0, 0, 1, [], []))
+            NBIoT.C.append(GrupoNOMA(deviceURLLC, [], 0, 1, []))
             NBIoT.C[deviceURLLC].dispositivos.append([NBIoT.U[0][deviceURLLC], False, False, False, False, False])
             NBIoT.U[0][deviceURLLC].alphabeta = 1
             indicePos1Grupo = indicePos1Grupo + 1
@@ -76,10 +81,9 @@ def AlgoritmoAgrupacionNOMA():
         cerosEliminar = indicePos1Grupo
         k_=0
 
-        if indiceAsignacionCluster != NBIoT.numC:######
-            #TODO implementar esto para un numero de clusters variable no fijo
+        if indiceAsignacionCluster != NBIoT.numC:
             for cn in range(indiceAsignacionCluster, int(NBIoT.numC)):
-                NBIoT.C.append(GrupoNOMA(cn, [], False, 0, 0, 0, 1, [], []))
+                NBIoT.C.append(GrupoNOMA(cn, [], 0, 1, []))
                 NBIoT.C[cn].dispositivos.append([False, False, False, False, False, False])
         else:
             indiceAsignacionCluster =0
@@ -126,137 +130,193 @@ def AlgoritmoAsignacionRecursos():
     for s in range(0, NBIoT.numS):
         NBIoT.S.append(Subportadora(s, [], 0, []))
 
-    DESsim.Ciclos = 0
 
+    #for sub in range(0, NBIoT.numS):
+    #    for clus in range(0, NBIoT.numC):
+    #        for dis in range(0, NBIoT.kmax):
+    #            if NBIoT.Cns[clus].dispositivos[0][dis] != False:
+    #                NBIoT.Cns[clus].dispositivos[0][dis].Px[sub] = .2 / (dis+1)
+#
     #Inicio del bucle del algoritmo de asignación de recursos
-    #Validación de todas las tasas de los usuarios
+    while True:
+        #Validación de todas las tasas de los usuarios y que las subportadoras se hayan asignado
+        if ((NBIoT.S == []) and (NBIoT.Cns == [])):
+            break
+        NBIoT.numS = len(NBIoT.S)
 
-    #while True:
-    #    if ((NBIoT.S == []) and (Cns == [])):
-    #        break
+        # For para recorrer todas las subportadoras disponibles
+        for subportadora in range(0, NBIoT.numS):
+            NBIoT.S[subportadora].c_ = []
+            NBIoT.Sv = []
+            #Validacion para ver si hay aún clusters sin asignar
+            if NBIoT.Cns == []:
+                break
+            NBIoT.numC = len(NBIoT.Cns)
+            # For para recorrer los grupos NOMA no satisfechos (Cns)
+            for cluster in range(0, NBIoT.numC):
+                #Inicilalización a cero de las tasas totales de cada cluster
+                NBIoT.Cns[cluster].RTotal = 0
 
-    #Ciclos que toma la asignación
-    DESsim.Ciclos = DESsim.Ciclos + 1
-
-    NBIoT.numS = len(NBIoT.S)
-
-    # For para recorrer todas las subportadoras disponibles
-    for subportadora in range(0, NBIoT.numS):
-        NBIoT.S[subportadora].c_ = []
-        NBIoT.Sv = []
-        NBIoT.numC = len(NBIoT.Cns)
-
-        # For para recorrer los grupos NOMA no satisfechos (Cns)
-        for cluster in range(0, NBIoT.numC):
-            #Inicilalización a cero de las tasas totales de cada cluster
-            NBIoT.Cns[cluster].RTotal = 0
-
-            # For para recorrer todos los rangos del grupo NOMA
-            for device in range(0, NBIoT.kmax):
-                #Validación de que algun rango del cluster está vacio o desocupado
-                if NBIoT.Cns[cluster].dispositivos[0][device] != False:
-                    Interferencias = calculoInterferencia(NBIoT.Cns, subportadora, cluster, device)
-                    R = calculoTasaTx(Interferencias, NBIoT.Cns, subportadora, cluster, device)
-                    # Se asigna la tasa lograda a dispositivo
-                    NBIoT.Cns[cluster].dispositivos[0][device].Rx = R
-                    NBIoT.Cns[cluster].RTotal = NBIoT.Cns[cluster].RTotal + R
-
-        #Grupo NOMA que maximiza la tasa
-        NBIoT.S[subportadora].c_ = busquedaMejorGrupoNOMA(NBIoT.Cns)
-
-        #Se busca en la lista Cns el grupo NOMA que maximiza la tasa
-        ID_cluster_c = busquedaIDCns(NBIoT.Cns, NBIoT.S[subportadora].c_)
-
-        #Actualizar lista de subportadoras asignadas al cluster Sac
-        NBIoT.Cns[ID_cluster_c].Sac.append(NBIoT.S[subportadora].id)
-
-        Sac = len(NBIoT.Cns[ID_cluster_c].Sac)
-
-        #S^ para tener regitro de las s que quedan
-        NBIoT.Sv.append(NBIoT.S[subportadora].id)
-
-
-
-        # Actualización de Tasas del mejor grupo NOMA
-        #Inicializar Rs
-        if (Sac == 1):
-            NBIoT.Cns = actualizacionTasasc_(NBIoT.Cns, ID_cluster_c)
-
-        else:
-            for device in range(0, NBIoT.kmax):
-                if NBIoT.Cns[ID_cluster_c].dispositivos[0][device] != False:
-                    NBIoT.Cns[ID_cluster_c].dispositivos[0][device].Rs = 0
-
-            for carrier in range(0, Sac):
-                if carrier == Sac-1:
-                    NBIoT.Cns = actualizacionPotenciasc_(NBIoT.Cns, ID_cluster_c, NBIoT.S[subportadora].id, Sac-1)
+                # For para recorrer todos los rangos del grupo NOMA
                 for device in range(0, NBIoT.kmax):
-                    # Validación de que algun rango del cluster está vacio o desocupado
-                    if NBIoT.Cns[ID_cluster_c].dispositivos[0][device] != False:
-                        Interferencias = calculoInterferencia(NBIoT.Cns, NBIoT.Cns[ID_cluster_c].Sac[carrier], ID_cluster_c, device)
-                        R = calculoTasaTx(Interferencias, NBIoT.Cns, NBIoT.Cns[ID_cluster_c].Sac[carrier], ID_cluster_c, device)
-                        NBIoT.Cns[ID_cluster_c].dispositivos[0][device].Rx = R
+                    #Validación de que algun rango del cluster está vacio o desocupado
+                    if NBIoT.Cns[cluster].dispositivos[0][device] != False:
+                        Interferencias = calculoInterferencia(NBIoT.Cns, subportadora, cluster, device)
+                        R = calculoTasaTx(Interferencias, NBIoT.Cns, subportadora, cluster, device)
+                        # Se asigna la tasa lograda a dispositivo
+                        NBIoT.Cns[cluster].dispositivos[0][device].Rx = R
+                        NBIoT.Cns[cluster].RTotal = NBIoT.Cns[cluster].RTotal + R
+
+            #Grupo NOMA que maximiza la tasa
+            NBIoT.S[subportadora].c_ = busquedaMejorGrupoNOMA(NBIoT.Cns)
+
+            #Se busca en la lista Cns el grupo NOMA que maximiza la tasa
+            ID_cluster_c = busquedaID(NBIoT.Cns, NBIoT.S[subportadora].c_)
+
+            #Actualizar lista de subportadoras asignadas al cluster Sac
+            NBIoT.Cns[ID_cluster_c].Sac.append(NBIoT.S[subportadora].id)
+
+            Sac = len(NBIoT.Cns[ID_cluster_c].Sac)
+
+            #S^ para tener registro de las s que quedan
+            NBIoT.Sv.append(NBIoT.S[subportadora].id)
+
+            # Actualización de Tasas del mejor grupo NOMA
+            #Inicializar Rs
+            if (Sac == 1):
                 NBIoT.Cns = actualizacionTasasc_(NBIoT.Cns, ID_cluster_c)
 
-        for carrier in range(0, Sac):
-            #Actualización de Potencias del mejor grupo NOMA
-            NBIoT.Cns = actualizacionPotenciasc_(NBIoT.Cns, ID_cluster_c, NBIoT.Cns[ID_cluster_c].Sac[carrier], Sac)
+            else:
+                for device in range(0, NBIoT.kmax):
+                    if NBIoT.Cns[ID_cluster_c].dispositivos[0][device] != False:
+                        NBIoT.Cns[ID_cluster_c].dispositivos[0][device].Rs = 0
+
+                for carrier in range(0, Sac):
+                    if carrier == Sac-1:
+                        NBIoT.Cns = actualizacionPotenciasc_(NBIoT.Cns, ID_cluster_c, NBIoT.S[subportadora].id, Sac-1)
+                    for device in range(0, NBIoT.kmax):
+                        # Validación de que algun rango del cluster está vacio o desocupado
+                        if NBIoT.Cns[ID_cluster_c].dispositivos[0][device] != False:
+                            Interferencias = calculoInterferencia(NBIoT.Cns, NBIoT.Cns[ID_cluster_c].Sac[carrier], ID_cluster_c, device)
+                            R = calculoTasaTx(Interferencias, NBIoT.Cns, NBIoT.Cns[ID_cluster_c].Sac[carrier], ID_cluster_c, device)
+                            NBIoT.Cns[ID_cluster_c].dispositivos[0][device].Rx = R
+                    NBIoT.Cns = actualizacionTasasc_(NBIoT.Cns, ID_cluster_c)
+
+            for carrier in range(0, Sac):
+                #Actualización de Potencias del mejor grupo NOMA
+                NBIoT.Cns = actualizacionPotenciasc_(NBIoT.Cns, ID_cluster_c, NBIoT.Cns[ID_cluster_c].Sac[carrier], Sac)
 
 
-        # Validación del cumplimiento de tasas del mejor grupo NOMA c_ (c*)
-        condicion = validacionTasas(NBIoT.Cns, ID_cluster_c)
+            # Validación del cumplimiento de tasas del mejor grupo NOMA c_ (c*)
+            condicion = validacionTasas(NBIoT.Cns, ID_cluster_c)
 
-        # Retribución de subportadora a cluster de acuerdo con c* en caso de que se cumplan los umbrales de las tasas
-        if condicion == True:
-            #Asignacion de s y c por medio de sus ids en lista Agrupaciones
-            NBIoT.Agrupaciones.append([NBIoT.Cns[ID_cluster_c]])
-            # Asignación de grupo NOMA Cns
-            NBIoT.Cns[ID_cluster_c] = 0
-            #Quitar a  c_ de los cluters que no han cumplido su tasa Cns
-            #Limpiar Lista de Cns ya asignadas
-            for clus in range(0, len(NBIoT.Cns)):
-                if NBIoT.Cns[clus] == 0:
-                    del NBIoT.Cns[clus]
-                    break
+            # Retribución de subportadora a cluster de acuerdo con c* en caso de que se cumplan los umbrales de las tasas
+            if condicion == True or Sac == 1:
+                #Asignacion de s y c por medio de sus ids en lista Agrupaciones
+                NBIoT.Agrupaciones.append(NBIoT.Cns[ID_cluster_c])
+                # Asignación de grupo NOMA Cns
+                NBIoT.Cns[ID_cluster_c] = 0
+                #Quitar a  c_ de los cluters que no han cumplido su tasa Cns
+                #Limpiar Lista de Cns ya asignadas
+                for clus in range(0, len(NBIoT.Cns)):
+                    if NBIoT.Cns[clus] == 0:
+                        del NBIoT.Cns[clus]
+                        break
 
-        # Asignación de subportadora s
-        NBIoT.S[subportadora] = 0
+            # Asignación de subportadora s
+            NBIoT.S[subportadora] = 0
 
-    #Limpiar Lista de Subportadoras ya asignadas
-    sub = 0
-    numS = len(NBIoT.S)
-    while sub < numS:
-        if NBIoT.S[sub] == 0:
-            del NBIoT.S[sub]
-            numS -= 1
-        else:
-            sub += 1
+        #Limpiar Lista de Subportadoras ya asignadas
+        sub = 0
+        numS = len(NBIoT.S)
+        while sub < numS:
+            if NBIoT.S[sub] == 0:
+                del NBIoT.S[sub]
+                numS -= 1
+            else:
+                sub += 1
 
-    #Validación si todas las tasas de los usuarios C se han cumplido
-    #if (NBIoT.Cns == []):
-    #        # For para recorrer todas las subportadoras disponibles
-    #        for subportadora in range(0, NBIoT.numS):
-    #            NBIoT.S[subportadora].c_ = []
-    #            NBIoT.Sv = []
-    #            NBIoT.numC = len(NBIoT.Cns)
-#
-    #            # For para recorrer los grupos NOMA no satisfechos (Cns)
-    #            for cluster in range(0, NBIoT.numC):
-    #                # Inicilalización a cero de las tasas totales de cada cluster
-    #                NBIoT.Cns[cluster].RTotal = 0
-#
-    #                # For para recorrer todos los rangos del grupo NOMA
-    #                for device in range(0, NBIoT.kmax):
-    #                    # Validación de que algun rango del cluster está vacio o desocupado
-    #                    if NBIoT.Cns[cluster].dispositivos[0][device] != False:
-    #                        Interferencias = calculoInterferencia(NBIoT.Cns, subportadora, cluster, device)
-    #                        R = calculoTasaTx(Interferencias, NBIoT.Cns, subportadora, cluster, device)
-    #                        # Se asigna la tasa lograda a dispositivo
-    #                        NBIoT.Cns[cluster].dispositivos[0][device].Rx = R
-    #                        NBIoT.Cns[cluster].RTotal = NBIoT.Cns[cluster].RTotal + R
-#
+        print("Subportadoras restantes:", len(NBIoT.S))
+        usuariosSatisfechos(NBIoT.Agrupaciones)
 
-    #Asignación de las subportadoras sobrantes
+        #Asignación de las subportadoras sobrantes
+        #Validación si todas las tasas de los usuarios C se han cumplido
+        if (NBIoT.Cns == []):
+            NBIoT.numS = len(NBIoT.S)
+            # For para recorrer todas las subportadoras disponibles
+            for subportadora in range(0, NBIoT.numS):
+                NBIoT.S[subportadora].c_ = []
+                NBIoT.Sv = []
+                NBIoT.numC = len(NBIoT.Agrupaciones)
+
+                # For para recorrer los grupos NOMA
+                for cluster in range(0, NBIoT.numC):
+                    # Inicilalización a cero de las tasas totales de cada cluster
+                    NBIoT.Agrupaciones[cluster].RTotal = 0
+
+                    # For para recorrer todos los rangos del grupo NOMA
+                    for device in range(0, NBIoT.kmax):
+                        # Validación de que algun rango del cluster está vacio o desocupado
+                        if NBIoT.Agrupaciones[cluster].dispositivos[0][device] != False:
+                            Interferencias = calculoInterferencia(NBIoT.Agrupaciones, subportadora, cluster, device)
+                            R = calculoTasaTx(Interferencias, NBIoT.Agrupaciones, subportadora, cluster, device)
+                            # Se asigna la tasa lograda a dispositivo
+                            NBIoT.Agrupaciones[cluster].dispositivos[0][device].Rx = R
+                            NBIoT.Agrupaciones[cluster].RTotal = NBIoT.Agrupaciones[cluster].RTotal + R
+
+                # Grupo NOMA que maximiza la tasa
+                NBIoT.S[subportadora].c_ = busquedaMejorGrupoNOMA(NBIoT.Agrupaciones)
+
+                # Se busca en la lista el grupo NOMA que maximiza la tasa
+                ID_cluster_c = busquedaID(NBIoT.Agrupaciones, NBIoT.S[subportadora].c_)
+
+                # Actualizar lista de subportadoras asignadas al cluster Sac
+                NBIoT.Agrupaciones[ID_cluster_c].Sac.append(NBIoT.S[subportadora].id)
+
+                Sac = len(NBIoT.Agrupaciones[ID_cluster_c].Sac)
+
+                # S^ para tener registro de las s que quedan
+                NBIoT.Sv.append(NBIoT.S[subportadora].id)
+
+                # Actualización de Tasas del mejor grupo NOMA
+                # Inicializar Rs
+                if (Sac == 1):
+                    NBIoT.Agrupaciones = actualizacionTasasc_(NBIoT.Agrupaciones, ID_cluster_c)
+
+                else:
+                    for device in range(0, NBIoT.kmax):
+                        if NBIoT.Agrupaciones[ID_cluster_c].dispositivos[0][device] != False:
+                            NBIoT.Agrupaciones[ID_cluster_c].dispositivos[0][device].Rs = 0
+
+                    for carrier in range(0, Sac):
+                        if carrier == Sac - 1:
+                            NBIoT.Agrupaciones = actualizacionPotenciasc_(NBIoT.Agrupaciones, ID_cluster_c, NBIoT.S[subportadora].id, Sac - 1)
+                        for device in range(0, NBIoT.kmax):
+                            # Validación de que algun rango del cluster está vacio o desocupado
+                            if NBIoT.Agrupaciones[ID_cluster_c].dispositivos[0][device] != False:
+                                Interferencias = calculoInterferencia(NBIoT.Agrupaciones, NBIoT.Agrupaciones[ID_cluster_c].Sac[carrier], ID_cluster_c, device)
+                                R = calculoTasaTx(Interferencias, NBIoT.Agrupaciones, NBIoT.Agrupaciones[ID_cluster_c].Sac[carrier], ID_cluster_c, device)
+                                NBIoT.Agrupaciones[ID_cluster_c].dispositivos[0][device].Rx = R
+                        NBIoT.Agrupaciones = actualizacionTasasc_(NBIoT.Agrupaciones, ID_cluster_c)
+
+                for carrier in range(0, Sac):
+                    # Actualización de Potencias del mejor grupo NOMA
+                    NBIoT.Agrupaciones = actualizacionPotenciasc_(NBIoT.Agrupaciones, ID_cluster_c, NBIoT.Agrupaciones[ID_cluster_c].Sac[carrier], Sac)
+
+                # Asignación de subportadora s
+                NBIoT.S[subportadora] = 0
+            # Limpiar Lista de Subportadoras ya asignadas
+            sub = 0
+            numS = len(NBIoT.S)
+            while sub < numS:
+                if NBIoT.S[sub] == 0:
+                    del NBIoT.S[sub]
+                    numS -= 1
+                else:
+                    sub += 1
+
+            print("Subportadoras:", len(NBIoT.S))
+        usuariosSatisfechos(NBIoT.Agrupaciones)
 
 
 
@@ -288,7 +348,7 @@ def busquedaMejorGrupoNOMA(ListaClusters):
     return ListaClusters[cluster].id
 
 #Como la lista Cns es dinámica los indices van a ir cambiendo por lo que el id no correspondrá con el indice por eso se busca su id
-def busquedaIDCns(ListaClusters, ID):
+def busquedaID(ListaClusters, ID):
     for cluster in range(0, len(ListaClusters)):
         #Se busca el identificador del cluster
         if ListaClusters[cluster].id == ID:
@@ -317,7 +377,8 @@ def actualizacionPotenciasc_(ListaClusters, cluster, subportadora, Sac):
     for device in range(0, NBIoT.kmax):
         # Validación de que algun rango del cluster está vacio o desocupado
         if ListaClusters[cluster].dispositivos[0][device] != False:
-            ListaClusters[cluster].dispositivos[0][device].Px[subportadora] = 0.2 / ( Sac + 1)
+            #ListaClusters[cluster].dispositivos[0][device].Px[subportadora] = (0.2/(device+1)) / ( Sac + 1)
+            ListaClusters[cluster].dispositivos[0][device].Px[subportadora] = 0.2 / (Sac + 1)
     return ListaClusters
 
 #Función que checa que las tasas de los dispositivos sean satisfacidas
@@ -329,5 +390,20 @@ def validacionTasas(ListaClusters, cluster):
                 return False
     return True
 
+#FUncion que calcula cuantos usuarios alcanzaron su tasa
+def usuariosSatisfechos(ListaClusters):
+    contadorUsuarios= 0
+    for cluster in range(0, len(ListaClusters)):
+        if ListaClusters[cluster].Sac:
+            for device in range(0, NBIoT.kmax):
+                # Validación de que algun rango del cluster está vacio o desocupado
+                if ListaClusters[cluster].dispositivos[0][device] != False:
+                    if (ListaClusters[cluster].dispositivos[0][device].Rs) >= (ListaClusters[cluster].dispositivos[0][device].Rth):
+                        contadorUsuarios = contadorUsuarios + 1
+    print("Usuarios con tasas satisfechas: ", contadorUsuarios)
+    #print(contadorUsuarios)
+
+
+# TODO : VALIDAR PARA TODOS LOS CASOS POSIBLES, C CLUSTERS (48), M USUARIOS MTC (300) Y U USUARIOS URLLC (200) , K RANGOS KMAX (6)
+
 AlgoritmoAsignacionRecursos()
-#NBIoT.Agrupaciones.sort()
