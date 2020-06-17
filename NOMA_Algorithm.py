@@ -18,7 +18,6 @@ NumDispositivosURLLC = 48
 NumDispositivosMTC = 200
 kmax = 4
 Numero_clusters = 47
-
 #Creación de Objetos para la simulación
 DESsim = Simulacion(0, PLE, RadioCelular)
 NBIoT = NB_IoT(48, [], [], [], [], Numero_clusters, [], int(NumDispositivosURLLC), [], int(NumDispositivosMTC), [], 0, [], kmax, 3.75e3, 5.012e-21)
@@ -105,7 +104,7 @@ def AlgoritmoAgrupacionNOMA():
         NBIoT.M[0][deviceMTC].alphabeta = 1
         indiceAsignacionCluster = indiceAsignacionCluster + 1
 
-        if indiceAsignacionCluster == (NBIoT.numC):######
+        if indiceAsignacionCluster == (NBIoT.numC):
             k_ = k_ + 1
             indiceAsignacionCluster = 0
             if k_ == NBIoT.kmax:
@@ -116,7 +115,7 @@ def AlgoritmoAgrupacionNOMA():
     del NBIoT.M[0][0:cerosEliminar]
 
 #Ejecución del algoritmo para la agrupación NOMA
-AlgoritmoAgrupacionNOMA()
+#AlgoritmoAgrupacionNOMA()
 
 
 
@@ -130,13 +129,13 @@ def AlgoritmoAsignacionRecursos():
     for s in range(0, NBIoT.numS):
         NBIoT.S.append(Subportadora(s, [], 0, []))
 
-
+    #Prueba
     #for sub in range(0, NBIoT.numS):
     #    for clus in range(0, NBIoT.numC):
     #        for dis in range(0, NBIoT.kmax):
     #            if NBIoT.Cns[clus].dispositivos[0][dis] != False:
     #                NBIoT.Cns[clus].dispositivos[0][dis].Px[sub] = .2 / (dis+1)
-#
+
     #Inicio del bucle del algoritmo de asignación de recursos
     while True:
         #Validación de todas las tasas de los usuarios y que las subportadoras se hayan asignado
@@ -403,7 +402,18 @@ def usuariosSatisfechos(ListaClusters):
     print("Usuarios con tasas satisfechas: ", contadorUsuarios)
     #print(contadorUsuarios)
 
-
-# TODO : VALIDAR PARA TODOS LOS CASOS POSIBLES, C CLUSTERS (48), M USUARIOS MTC (300) Y U USUARIOS URLLC (200) , K RANGOS KMAX (6)
-
+AlgoritmoAgrupacionNOMA()
 AlgoritmoAsignacionRecursos()
+# TODO : VALIDAR PARA TODOS LOS CASOS POSIBLES, C CLUSTERS (48), M USUARIOS MTC (300) Y U USUARIOS URLLC (200) , K RANGOS KMAX (6)
+#for c in range(1, 48):
+#    for u in range(0, 200):
+#        for m in range(0, 300):
+#            for kmax in range(1, 6):
+#                DESsim = Simulacion(0, PLE, RadioCelular)
+#                NBIoT = NB_IoT(48, [], [], [], [], c, [], int(u), [], int(m), [], 0, [], kmax, 3.75e3, 5.012e-21)
+#                # Creacion de Dispositivos URLLC
+#                NBIoT.U.append(creardispositivos(NBIoT.numU, 1, DESsim.PLE, DESsim.r_cell, NBIoT.numS))
+#                # Creacion de Dispositivos mMTC
+#                NBIoT.M.append(creardispositivos(NBIoT.numM, 2, DESsim.PLE, DESsim.r_cell, NBIoT.numS))
+#                AlgoritmoAgrupacionNOMA()
+#                AlgoritmoAsignacionRecursos()
