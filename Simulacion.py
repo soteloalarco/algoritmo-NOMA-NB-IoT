@@ -32,11 +32,13 @@ def simulacion_a(a1):
 # Graficas de Probabilidad de Bloqueo
 def graficasProbBloq(simulacion):
     plt.figure(100)
-    plt.plot(simulacion.a, simulacion.y, 'g', label="kmax=4")
+    plt.plot(simulacion.a, simulacion.y, 'g', label="Resultados Simulación")
+    y1 = [25, 50, 75, 100, 118, 125, 130, 135]
+    plt.plot(simulacion.a, y1, 'r', label="Resultados Articulo")
 
     plt.xlabel('Numero de usuarios')
     plt.ylabel('Usuarios con tasas satisfechas')
-    plt.title("NOMA con clusters y subportadoras de 48")
+    plt.title("NOMA con clusters y subportadoras de 48, kmax=4")
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper right', borderaxespad=0.)
 
     plt.show()
@@ -52,7 +54,7 @@ if __name__ == '__main__':
     output = []
 
     simulacion = Simulacion()  # Creación de objeto de clase Simulación
-    simulacion.a = [25,50,75,100,125,150,175,200]
+    simulacion.a = [25,50,75,100,125,150,175,192]
     # os.system('cls')
     inicio = timer()
     print("  Simulando  ...")

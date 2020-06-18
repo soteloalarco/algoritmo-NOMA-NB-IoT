@@ -11,13 +11,13 @@ import sys
 RadioCelular = 500
 PLE = 3
 
-#NumDispositivosURLLC = int(sys.argv[1]) / 4
-#NumDispositivosMTC = int(sys.argv[1]) - (int(sys.argv[1]) / 4)
+NumDispositivosURLLC = round(int(sys.argv[1]) / 4)
+NumDispositivosMTC = round(int(sys.argv[1]) - (int(sys.argv[1]) / 4))
 
-NumDispositivosURLLC = 48
-NumDispositivosMTC = 200
+#NumDispositivosURLLC = 48
+#NumDispositivosMTC = 200
 kmax = 4
-Numero_clusters = 47
+Numero_clusters = 48#int(NumDispositivosURLLC)
 #Creación de Objetos para la simulación
 DESsim = Simulacion(0, PLE, RadioCelular)
 NBIoT = NB_IoT(48, [], [], [], [], Numero_clusters, [], int(NumDispositivosURLLC), [], int(NumDispositivosMTC), [], 0, [], kmax, 3.75e3, 5.012e-21)
@@ -235,8 +235,8 @@ def AlgoritmoAsignacionRecursos():
             else:
                 sub += 1
 
-        print("Subportadoras restantes:", len(NBIoT.S))
-        usuariosSatisfechos(NBIoT.Agrupaciones)
+        #print("Subportadoras restantes:", len(NBIoT.S))
+        #usuariosSatisfechos(NBIoT.Agrupaciones)
 
         #Asignación de las subportadoras sobrantes
         #Validación si todas las tasas de los usuarios C se han cumplido
@@ -314,7 +314,7 @@ def AlgoritmoAsignacionRecursos():
                 else:
                     sub += 1
 
-            print("Subportadoras:", len(NBIoT.S))
+            #print("Subportadoras:", len(NBIoT.S))
         usuariosSatisfechos(NBIoT.Agrupaciones)
 
 
@@ -376,8 +376,9 @@ def actualizacionPotenciasc_(ListaClusters, cluster, subportadora, Sac):
     for device in range(0, NBIoT.kmax):
         # Validación de que algun rango del cluster está vacio o desocupado
         if ListaClusters[cluster].dispositivos[0][device] != False:
-            #ListaClusters[cluster].dispositivos[0][device].Px[subportadora] = (0.2/(device+1)) / ( Sac + 1)
-            ListaClusters[cluster].dispositivos[0][device].Px[subportadora] = 0.2 / (Sac + 1)
+            for sub in range (0, 48):
+                #ListaClusters[cluster].dispositivos[0][device].Px[subportadora] = (0.2/(device+1)) / ( Sac + 1)
+                ListaClusters[cluster].dispositivos[0][device].Px[sub] = 0.2 / (Sac + 1)
     return ListaClusters
 
 #Función que checa que las tasas de los dispositivos sean satisfacidas
@@ -392,6 +393,9 @@ def validacionTasas(ListaClusters, cluster):
 #FUncion que calcula cuantos usuarios alcanzaron su tasa
 def usuariosSatisfechos(ListaClusters):
     contadorUsuarios= 0
+    contadorU = 0
+    contadorM = 0
+    sumRate = 0
     for cluster in range(0, len(ListaClusters)):
         if ListaClusters[cluster].Sac:
             for device in range(0, NBIoT.kmax):
@@ -399,8 +403,14 @@ def usuariosSatisfechos(ListaClusters):
                 if ListaClusters[cluster].dispositivos[0][device] != False:
                     if (ListaClusters[cluster].dispositivos[0][device].Rs) >= (ListaClusters[cluster].dispositivos[0][device].Rth):
                         contadorUsuarios = contadorUsuarios + 1
-    print("Usuarios con tasas satisfechas: ", contadorUsuarios)
-    #print(contadorUsuarios)
+                        sumRate = sumRate + ListaClusters[cluster].dispositivos[0][device].Rs
+                        if ListaClusters[cluster].dispositivos[0][device].tipo==1:
+                            contadorU = contadorU + 1
+                        else: contadorM = contadorM + 1
+
+    #print("Usuarios con tasas satisfechas: ", contadorUsuarios)#, " URLLC: ", contadorU, " MTC: ", contadorM)
+    print(contadorUsuarios)
+    #print(sumRate)
 
 AlgoritmoAgrupacionNOMA()
 AlgoritmoAsignacionRecursos()
