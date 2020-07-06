@@ -33,12 +33,13 @@ def simulacion_a(a1):
 def graficasProbBloq(simulacion):
     plt.figure(100)
     plt.plot(simulacion.a, simulacion.y, 'g', label="Resultados Simulación")
-    y1 = [25, 50, 75, 100, 118, 125, 130, 135]
+    #y1 = [5.1e5, 8.1e5, 10.1e5, 12.1e5, 13e5]
+    y1 = [25,50, 75,100, 120, 130, 135, 140]
     plt.plot(simulacion.a, y1, 'r', label="Resultados Articulo")
 
     plt.xlabel('Numero de usuarios')
-    plt.ylabel('Usuarios con tasas satisfechas')
-    plt.title("NOMA con clusters y subportadoras de 48, kmax=4")
+    plt.ylabel('Sum Rate (bps)')
+    plt.title("NOMA con 48 clusters y subportadoras con agrupamiento de 4 usuarios")
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper right', borderaxespad=0.)
 
     plt.show()
@@ -55,6 +56,7 @@ if __name__ == '__main__':
 
     simulacion = Simulacion()  # Creación de objeto de clase Simulación
     simulacion.a = [25,50,75,100,125,150,175,192]
+    #simulacion.a = [10,20,30,40,50]
     # os.system('cls')
     inicio = timer()
     print("  Simulando  ...")
@@ -69,7 +71,7 @@ if __name__ == '__main__':
     #Conversion del formato de salida
 
     for i in range(len(results)):
-       simulacion.y.append(int(results[i]))
+       simulacion.y.append(float(results[i]))
 
     graficasProbBloq(simulacion)
 

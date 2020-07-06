@@ -17,7 +17,7 @@ NumDispositivosMTC = round(int(sys.argv[1]) - (int(sys.argv[1]) / 4))
 #NumDispositivosURLLC = 48
 #NumDispositivosMTC = 200
 kmax = 4
-Numero_clusters = 48#int(NumDispositivosURLLC)
+Numero_clusters = 15#int(NumDispositivosURLLC)
 #Creación de Objetos para la simulación
 DESsim = Simulacion(0, PLE, RadioCelular)
 NBIoT = NB_IoT(48, [], [], [], [], Numero_clusters, [], int(NumDispositivosURLLC), [], int(NumDispositivosMTC), [], 0, [], kmax, 3.75e3, 5.012e-21)
