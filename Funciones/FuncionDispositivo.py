@@ -30,13 +30,14 @@ def creardispositivos(numeroDispositivos, tipo, PLE, radio_celula, numeroSubport
 
         #Asignación de potencias para cada subportadora
         Px = []
-        for power in range(0, numeroSubportadoras):
-            Px.append(.2)
-
         #Asignación de umbrales de tasa de transmisión dependiendo el tipo de dispositivo
         if tipo == 1:
+            for power in range(0, numeroSubportadoras):
+                Px.append(.2)
             Rth = np.random.uniform(100, 20e3)
         elif tipo == 2:
+            for power in range(0, numeroSubportadoras):
+                Px.append(.025)
             Rth = np.random.uniform(100, 2e3)
 
         #Se crea el dispositivo de acuerdo con las caracteristicas establecidas

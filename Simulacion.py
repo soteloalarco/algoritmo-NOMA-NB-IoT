@@ -61,19 +61,20 @@ if __name__ == '__main__':
     inicio = timer()
     print("  Simulando  ...")
     # Multiprocesamiento
+    simulacion.y=[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
+    for reps in range (0, 20):
+        pool = mp.Pool(mp.cpu_count())
 
-    pool = mp.Pool(mp.cpu_count())
+        results = pool.map(simulacion_a, [a1 for a1 in simulacion.a])
 
-    results = pool.map(simulacion_a, [a1 for a1 in simulacion.a])
+        pool.close()
 
-    pool.close()
+        #Conversion del formato de salida
 
-    #Conversion del formato de salida
+        for i in range(len(results)):
+           simulacion.y[reps].append(float(results[i]))
 
-    for i in range(len(results)):
-       simulacion.y.append(float(results[i]))
-
-    graficasProbBloq(simulacion)
+        #graficasProbBloq(simulacion)
 
 
     fin = timer()
