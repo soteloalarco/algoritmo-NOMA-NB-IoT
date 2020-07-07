@@ -37,7 +37,7 @@ def creardispositivos(numeroDispositivos, tipo, PLE, radio_celula, numeroSubport
             Rth = np.random.uniform(100, 20e3)
         elif tipo == 2:
             for power in range(0, numeroSubportadoras):
-                Px.append(.025)
+                Px.append(.2)
             Rth = np.random.uniform(100, 2e3)
 
         #Se crea el dispositivo de acuerdo con las caracteristicas establecidas
