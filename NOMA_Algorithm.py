@@ -11,13 +11,19 @@ import sys
 RadioCelular = 500
 PLE = 3
 
-NumDispositivosURLLC = round(int(sys.argv[1]) / 4)
-NumDispositivosMTC = round(int(sys.argv[1]) - (int(sys.argv[1]) / 4))
+#NumDispositivosURLLC = round(int(sys.argv[1]) / 4)
+#NumDispositivosMTC = round(int(sys.argv[1]) - (int(sys.argv[1]) / 4))
 
-#NumDispositivosURLLC = 48
-#NumDispositivosMTC = 200
+NumDispositivosURLLC = 20
+NumDispositivosMTC = 10
 kmax = 4
-Numero_clusters = 48#int(NumDispositivosURLLC)
+
+Num_Total_Dispositivos = NumDispositivosURLLC + NumDispositivosMTC
+if  Num_Total_Dispositivos < 48:
+    Numero_clusters = Num_Total_Dispositivos
+elif Num_Total_Dispositivos >= 48:
+    Numero_clusters = 48#int(NumDispositivosURLLC)
+
 #Creación de Objetos para la simulación
 DESsim = Simulacion(0, PLE, RadioCelular)
 NBIoT = NB_IoT(48, [], [], [], [], Numero_clusters, [], int(NumDispositivosURLLC), [], int(NumDispositivosMTC), [], 0, [], kmax, 3.75e3, 5.012e-21)
@@ -383,7 +389,7 @@ def actualizacionPotenciasc_(ListaClusters, cluster, subportadora, Sac):
             elif ListaClusters[cluster].dispositivos[0][device].tipo == 2:
                 for sub in range (0, 48):
                     #ListaClusters[cluster].dispositivos[0][device].Px[subportadora] = (0.2/(device+1)) / ( Sac + 1)
-                    ListaClusters[cluster].dispositivos[0][device].Px[sub] = 0.2 / (Sac + 1)
+                    ListaClusters[cluster].dispositivos[0][device].Px[sub] = 0.1 / (Sac + 1)
     return ListaClusters
 
 #Función que checa que las tasas de los dispositivos sean satisfacidas
@@ -413,9 +419,9 @@ def usuariosSatisfechos(ListaClusters):
                             contadorU = contadorU + 1
                         else: contadorM = contadorM + 1
 
-    #print("Usuarios con tasas satisfechas: ", contadorUsuarios, " URLLC: ", contadorU, " MTC: ", contadorM)
+    print("Usuarios con tasas satisfechas: ", contadorUsuarios, " URLLC: ", contadorU, " MTC: ", contadorM)
     #print(contadorUsuarios)
-    print(sumRate)
+    #print(sumRate)
 
 AlgoritmoAgrupacionNOMA()
 AlgoritmoAsignacionRecursos()
