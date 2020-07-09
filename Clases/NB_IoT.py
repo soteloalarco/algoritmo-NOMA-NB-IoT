@@ -3,7 +3,7 @@ class NB_IoT(object):
         self.numS = numS    #Numero de subportadoras
         self.S = S          #Lista de subportadoras
         self.Sv = Sv        #Conjunto de subportadoras eliminadas
-        self.Agrupaciones = Agrupaciones
+        self.Agrupaciones = Agrupaciones #Conjunto de agrupaciones finales entre S y C
         self.Cns = Cns      #Lista de grupos NOMA con tasas insatisfechas
         self.numC = numC    #Numero de grupos NOMA
         self.C = C          #Lista de Grupos NOMA

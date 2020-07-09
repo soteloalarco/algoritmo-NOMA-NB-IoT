@@ -5,33 +5,34 @@ from Clases.Subportadora import Subportadora
 from Clases.NB_IoT import NB_IoT
 from Funciones.FuncionDispositivo import creardispositivos
 from Clases.Simulacion import Simulacion
-import sys
 
 # Variables de entrada
-RadioCelular = 500
-PLE = 3
+RadioCelular = 500# Modelo válido en distancias LoS en [61-1238] y con LoS en [60-930]
+PLE = 2.9 #2.9 con NloS y con LoS usar 2.0
+BW_subportadoraNBIoT = 3.75e3
+Potencia_ruidoTermico = 5.012e-21
 
-#NumDispositivosURLLC = round(int(sys.argv[1]) / 4)
-#NumDispositivosMTC = round(int(sys.argv[1]) - (int(sys.argv[1]) / 4))
-
-NumDispositivosURLLC = 20
-NumDispositivosMTC = 10
+NumDispositivosURLLC =48
+NumDispositivosMTC = 200
+Pmax_URLLC = 0.2 # Siempre en Clase 23dBm (.2)
+Pmax_MTC = 0.1 # Pueden ser Clase 23dBm (.2), 20dBm (.1) o 14dBm (0.025)
 kmax = 4
 
+#Regla 1
 Num_Total_Dispositivos = NumDispositivosURLLC + NumDispositivosMTC
+print("Número Total Dispositivos: ", Num_Total_Dispositivos)
 if  Num_Total_Dispositivos < 48:
     Numero_clusters = Num_Total_Dispositivos
 elif Num_Total_Dispositivos >= 48:
-    Numero_clusters = 48#int(NumDispositivosURLLC)
+    Numero_clusters = 48
 
 #Creación de Objetos para la simulación
 DESsim = Simulacion(0, PLE, RadioCelular)
-NBIoT = NB_IoT(48, [], [], [], [], Numero_clusters, [], int(NumDispositivosURLLC), [], int(NumDispositivosMTC), [], 0, [], kmax, 3.75e3, 5.012e-21)
+NBIoT = NB_IoT(48, [], [], [], [], Numero_clusters, [], int(NumDispositivosURLLC), [], int(NumDispositivosMTC), [], 0, [], kmax, BW_subportadoraNBIoT, Potencia_ruidoTermico)
 #Creacion de Dispositivos URLLC
-NBIoT.U.append(creardispositivos(NBIoT.numU, 1, DESsim.PLE, DESsim.r_cell, NBIoT.numS))
+NBIoT.U.append(creardispositivos(NBIoT.numU, 1, DESsim.PLE, DESsim.r_cell, NBIoT.numS, Pmax_URLLC))
 #Creacion de Dispositivos mMTC
-NBIoT.M.append(creardispositivos(NBIoT.numM, 2, DESsim.PLE, DESsim.r_cell, NBIoT.numS))
-
+NBIoT.M.append(creardispositivos(NBIoT.numM, 2, DESsim.PLE, DESsim.r_cell, NBIoT.numS, Pmax_MTC))
 
 def AlgoritmoAgrupacionNOMA():
     # Se empiezan a agrupar usuarios con una alta ganancia de canal promedio,
@@ -48,7 +49,7 @@ def AlgoritmoAgrupacionNOMA():
         # deviceURLLC corresponde al número de dispositivos uRLLC [U]
         if deviceURLLC < NBIoT.numC:
             # Asignar los dispositivos uRLLC a rangos bajos de los primeros grupos
-            NBIoT.C.append(GrupoNOMA(deviceURLLC, [], 0, 1, []))
+            NBIoT.C.append(GrupoNOMA(deviceURLLC, [], 0, 1, [], False))
             NBIoT.C[deviceURLLC].dispositivos.append([NBIoT.U[0][deviceURLLC], False, False, False, False, False])
             NBIoT.U[0][deviceURLLC].alphabeta = 1
             indicePos1Grupo = indicePos1Grupo + 1
@@ -88,7 +89,7 @@ def AlgoritmoAgrupacionNOMA():
 
         if indiceAsignacionCluster != NBIoT.numC:
             for cn in range(indiceAsignacionCluster, int(NBIoT.numC)):
-                NBIoT.C.append(GrupoNOMA(cn, [], 0, 1, []))
+                NBIoT.C.append(GrupoNOMA(cn, [], 0, 1, [], False))
                 NBIoT.C[cn].dispositivos.append([False, False, False, False, False, False])
         else:
             indiceAsignacionCluster =0
@@ -120,14 +121,9 @@ def AlgoritmoAgrupacionNOMA():
     # Eliminar ceros que se agregaron a lista
     del NBIoT.M[0][0:cerosEliminar]
 
-#Ejecución del algoritmo para la agrupación NOMA
-#AlgoritmoAgrupacionNOMA()
-
-
 
 #  *******************************************  Algoritmo para la asignación de recursos NOMA (subportadoras) **********************************************
 def AlgoritmoAsignacionRecursos():
-
     #Conjunto de clusters de dispositivos con tasas insatisfechas
     NBIoT.Cns = copy.deepcopy(NBIoT.C)
 
@@ -135,19 +131,14 @@ def AlgoritmoAsignacionRecursos():
     for s in range(0, NBIoT.numS):
         NBIoT.S.append(Subportadora(s, [], 0, []))
 
-    #Prueba
-    #for sub in range(0, NBIoT.numS):
-    #    for clus in range(0, NBIoT.numC):
-    #        for dis in range(0, NBIoT.kmax):
-    #            if NBIoT.Cns[clus].dispositivos[0][dis] != False:
-    #                NBIoT.Cns[clus].dispositivos[0][dis].Px[sub] = .2 / (dis+1)
-
     #Inicio del bucle del algoritmo de asignación de recursos
     while True:
         #Validación de todas las tasas de los usuarios y que las subportadoras se hayan asignado
         if ((NBIoT.S == []) and (NBIoT.Cns == [])):
             break
         NBIoT.numS = len(NBIoT.S)
+
+        #---------------------------------------------------PRIMERA PARTE DEL ALGORITMO----------------------------------------------------
 
         # For para recorrer todas las subportadoras disponibles
         for subportadora in range(0, NBIoT.numS):
@@ -214,9 +205,11 @@ def AlgoritmoAsignacionRecursos():
 
             # Validación del cumplimiento de tasas del mejor grupo NOMA c_ (c*)
             condicion = validacionTasas(NBIoT.Cns, ID_cluster_c)
+            if condicion == True:
+                NBIoT.Cns[ID_cluster_c].tasasSatisfechas = True
 
             # Retribución de subportadora a cluster de acuerdo con c* en caso de que se cumplan los umbrales de las tasas
-            if condicion == True or Sac == 1:
+            if  Sac == 1:
                 #Asignacion de s y c por medio de sus ids en lista Agrupaciones
                 NBIoT.Agrupaciones.append(NBIoT.Cns[ID_cluster_c])
                 # Asignación de grupo NOMA Cns
@@ -241,10 +234,11 @@ def AlgoritmoAsignacionRecursos():
             else:
                 sub += 1
 
-        #print("Subportadoras restantes:", len(NBIoT.S))
-        #usuariosSatisfechos(NBIoT.Agrupaciones)
+        usuariosSatisfechos(NBIoT.Agrupaciones)
+        print("Subportadoras restantes:", len(NBIoT.S))
+        # ---------------------------------------------------SEGUNDA PARTE DEL ALGORITMO----------------------------------------------------
 
-        #Asignación de las subportadoras sobrantes
+        #Asignación de las subportadoras restantes
         #Validación si todas las tasas de los usuarios C se han cumplido
         if (NBIoT.Cns == []):
             NBIoT.numS = len(NBIoT.S)
@@ -258,16 +252,16 @@ def AlgoritmoAsignacionRecursos():
                 for cluster in range(0, NBIoT.numC):
                     # Inicilalización a cero de las tasas totales de cada cluster
                     NBIoT.Agrupaciones[cluster].RTotal = 0
-
-                    # For para recorrer todos los rangos del grupo NOMA
-                    for device in range(0, NBIoT.kmax):
-                        # Validación de que algun rango del cluster está vacio o desocupado
-                        if NBIoT.Agrupaciones[cluster].dispositivos[0][device] != False:
-                            Interferencias = calculoInterferencia(NBIoT.Agrupaciones, subportadora, cluster, device)
-                            R = calculoTasaTx(Interferencias, NBIoT.Agrupaciones, subportadora, cluster, device)
-                            # Se asigna la tasa lograda a dispositivo
-                            NBIoT.Agrupaciones[cluster].dispositivos[0][device].Rx = R
-                            NBIoT.Agrupaciones[cluster].RTotal = NBIoT.Agrupaciones[cluster].RTotal + R
+                    if NBIoT.Agrupaciones[cluster].tasasSatisfechas == False:
+                        # For para recorrer todos los rangos del grupo NOMA
+                        for device in range(0, NBIoT.kmax):
+                            # Validación de que algun rango del cluster está vacio o desocupado
+                            if NBIoT.Agrupaciones[cluster].dispositivos[0][device] != False:
+                                Interferencias = calculoInterferencia(NBIoT.Agrupaciones, subportadora, cluster, device)
+                                R = calculoTasaTx(Interferencias, NBIoT.Agrupaciones, subportadora, cluster, device)
+                                # Se asigna la tasa lograda a dispositivo
+                                NBIoT.Agrupaciones[cluster].dispositivos[0][device].Rx = R
+                                NBIoT.Agrupaciones[cluster].RTotal = NBIoT.Agrupaciones[cluster].RTotal + R
 
                 # Grupo NOMA que maximiza la tasa
                 NBIoT.S[subportadora].c_ = busquedaMejorGrupoNOMA(NBIoT.Agrupaciones)
@@ -308,8 +302,14 @@ def AlgoritmoAsignacionRecursos():
                     # Actualización de Potencias del mejor grupo NOMA
                     NBIoT.Agrupaciones = actualizacionPotenciasc_(NBIoT.Agrupaciones, ID_cluster_c, NBIoT.Agrupaciones[ID_cluster_c].Sac[carrier], Sac)
 
+                # Validación del cumplimiento de tasas del mejor grupo NOMA c_ (c*)
+                condicion = validacionTasas(NBIoT.Agrupaciones, ID_cluster_c)
+                if condicion == True:
+                    NBIoT.Agrupaciones[ID_cluster_c].tasasSatisfechas = True
+
                 # Asignación de subportadora s
                 NBIoT.S[subportadora] = 0
+
             # Limpiar Lista de Subportadoras ya asignadas
             sub = 0
             numS = len(NBIoT.S)
@@ -324,8 +324,7 @@ def AlgoritmoAsignacionRecursos():
         usuariosSatisfechos(NBIoT.Agrupaciones)
 
 
-
-#Funciones que se utilizan en algoritmo de asignación de recursos
+#++++++++++++++++++++++++++++++Funciones que se utilizan en algoritmo de asignación de recursos++++++++++++++++++++++++++++++++
 
 #Calcula la Interferencia de los dispositivos del grupo NOMA para un dispositivo
 def calculoInterferencia(ListaClusters, subportadora, cluster, device):
@@ -385,11 +384,11 @@ def actualizacionPotenciasc_(ListaClusters, cluster, subportadora, Sac):
             if ListaClusters[cluster].dispositivos[0][device].tipo == 1:
                 for sub in range (0, 48):
                     #ListaClusters[cluster].dispositivos[0][device].Px[subportadora] = (0.2/(device+1)) / ( Sac + 1)
-                    ListaClusters[cluster].dispositivos[0][device].Px[sub] = 0.2 / (Sac + 1)
+                    ListaClusters[cluster].dispositivos[0][device].Px[sub] = Pmax_URLLC / (Sac + 1)
             elif ListaClusters[cluster].dispositivos[0][device].tipo == 2:
                 for sub in range (0, 48):
                     #ListaClusters[cluster].dispositivos[0][device].Px[subportadora] = (0.2/(device+1)) / ( Sac + 1)
-                    ListaClusters[cluster].dispositivos[0][device].Px[sub] = 0.1 / (Sac + 1)
+                    ListaClusters[cluster].dispositivos[0][device].Px[sub] = Pmax_MTC / (Sac + 1)
     return ListaClusters
 
 #Función que checa que las tasas de los dispositivos sean satisfacidas
@@ -401,7 +400,7 @@ def validacionTasas(ListaClusters, cluster):
                 return False
     return True
 
-#FUncion que calcula cuantos usuarios alcanzaron su tasa
+#Funcion que calcula cuantos usuarios alcanzaron su tasa
 def usuariosSatisfechos(ListaClusters):
     contadorUsuarios= 0
     contadorU = 0
@@ -419,22 +418,7 @@ def usuariosSatisfechos(ListaClusters):
                             contadorU = contadorU + 1
                         else: contadorM = contadorM + 1
 
-    print("Usuarios con tasas satisfechas: ", contadorUsuarios, " URLLC: ", contadorU, " MTC: ", contadorM)
-    #print(contadorUsuarios)
-    #print(sumRate)
+    print("Usuarios con tasas satisfechas: ", contadorUsuarios, " URLLC: ", contadorU, " MTC: ", contadorM, " Sum Rate: ", sumRate)
 
 AlgoritmoAgrupacionNOMA()
 AlgoritmoAsignacionRecursos()
-# TODO : VALIDAR PARA TODOS LOS CASOS POSIBLES, C CLUSTERS (48), M USUARIOS MTC (300) Y U USUARIOS URLLC (200) , K RANGOS KMAX (6)
-#for c in range(1, 48):
-#    for u in range(0, 200):
-#        for m in range(0, 300):
-#            for kmax in range(1, 6):
-#                DESsim = Simulacion(0, PLE, RadioCelular)
-#                NBIoT = NB_IoT(48, [], [], [], [], c, [], int(u), [], int(m), [], 0, [], kmax, 3.75e3, 5.012e-21)
-#                # Creacion de Dispositivos URLLC
-#                NBIoT.U.append(creardispositivos(NBIoT.numU, 1, DESsim.PLE, DESsim.r_cell, NBIoT.numS))
-#                # Creacion de Dispositivos mMTC
-#                NBIoT.M.append(creardispositivos(NBIoT.numM, 2, DESsim.PLE, DESsim.r_cell, NBIoT.numS))
-#                AlgoritmoAgrupacionNOMA()
-#                AlgoritmoAsignacionRecursos()
