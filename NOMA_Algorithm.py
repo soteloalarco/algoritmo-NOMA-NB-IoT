@@ -7,7 +7,7 @@ from Funciones.FuncionDispositivo import creardispositivos
 from Clases.Simulacion import Simulacion
 
 # Variables de entrada
-RadioCelular = 500# Modelo válido en distancias LoS en [61-1238] y con LoS en [60-930]
+RadioCelular = 1000# Modelo válido en distancias NLoS en [61-1238] y con LoS en [60-930]
 PLE = 2.9 #2.9 con NloS y con LoS usar 2.0
 BW_subportadoraNBIoT = 3.75e3
 Potencia_ruidoTermico = 5.012e-21
