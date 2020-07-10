@@ -5,6 +5,7 @@ from Clases.Subportadora import Subportadora
 from Clases.NB_IoT import NB_IoT
 from Funciones.FuncionDispositivo import creardispositivos
 from Clases.Simulacion import Simulacion
+import sys
 
 # Variables de entrada
 RadioCelular = 1000# Modelo válido en distancias NLoS en [61-1238] y con LoS en [60-930]
@@ -12,15 +13,18 @@ PLE = 2.9 #2.9 con NloS y con LoS usar 2.0
 BW_subportadoraNBIoT = 3.75e3
 Potencia_ruidoTermico = 5.012e-21
 
-NumDispositivosURLLC =48
-NumDispositivosMTC = 200
+#NumDispositivosURLLC =48
+#NumDispositivosMTC = 200
+
+
+
 Pmax_URLLC = 0.2 # Siempre en Clase 23dBm (.2)
 Pmax_MTC = 0.1 # Pueden ser Clase 23dBm (.2), 20dBm (.1) o 14dBm (0.025)
 kmax = 4
 
 #Regla 1
 Num_Total_Dispositivos = NumDispositivosURLLC + NumDispositivosMTC
-print("Número Total Dispositivos: ", Num_Total_Dispositivos)
+#print("Número Total Dispositivos: ", Num_Total_Dispositivos)
 if  Num_Total_Dispositivos < 48:
     Numero_clusters = Num_Total_Dispositivos
 elif Num_Total_Dispositivos >= 48:
@@ -234,8 +238,8 @@ def AlgoritmoAsignacionRecursos():
             else:
                 sub += 1
 
-        usuariosSatisfechos(NBIoT.Agrupaciones)
-        print("Subportadoras restantes:", len(NBIoT.S))
+        #usuariosSatisfechos(NBIoT.Agrupaciones)
+        #print("Subportadoras restantes:", len(NBIoT.S))
         # ---------------------------------------------------SEGUNDA PARTE DEL ALGORITMO----------------------------------------------------
 
         #Asignación de las subportadoras restantes
@@ -418,7 +422,8 @@ def usuariosSatisfechos(ListaClusters):
                             contadorU = contadorU + 1
                         else: contadorM = contadorM + 1
 
-    print("Usuarios con tasas satisfechas: ", contadorUsuarios, " URLLC: ", contadorU, " MTC: ", contadorM, " Sum Rate: ", sumRate)
+    #print("Usuarios con tasas satisfechas: ", contadorUsuarios, " URLLC: ", contadorU, " MTC: ", contadorM, " Sum Rate: ", sumRate)
+    print(sumRate)
 
 AlgoritmoAgrupacionNOMA()
 AlgoritmoAsignacionRecursos()
