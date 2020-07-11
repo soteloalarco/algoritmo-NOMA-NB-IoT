@@ -8,28 +8,74 @@ from Clases.Simulacion import Simulacion
 import sys
 
 # Variables de entrada
-RadioCelular = 1000# Modelo válido en distancias NLoS en [61-1238] y con LoS en [60-930]
-PLE = 2.9 #2.9 con NloS y con LoS usar 2.0
+RadioCelular = 500# Modelo válido en distancias NLoS en [61-1238] y con LoS en [60-930]
+PLE = 3 #2.9 con NloS y con LoS usar 2.0
 BW_subportadoraNBIoT = 3.75e3
 Potencia_ruidoTermico = 5.012e-21
 
-#NumDispositivosURLLC =48
-#NumDispositivosMTC = 200
+#NumDispositivosURLLC =12
+#NumDispositivosMTC =38
 
-
+NumDispositivosURLLC = round(int(sys.argv[1]) / 4)
+NumDispositivosMTC = round(int(sys.argv[1]) - (int(sys.argv[1]) / 4))
+NumTotalDispositivos = NumDispositivosURLLC + NumDispositivosMTC
 
 Pmax_URLLC = 0.2 # Siempre en Clase 23dBm (.2)
 Pmax_MTC = 0.1 # Pueden ser Clase 23dBm (.2), 20dBm (.1) o 14dBm (0.025)
 kmax = 4
+#Numero_clusters = 0
 
-#Regla 1
-Num_Total_Dispositivos = NumDispositivosURLLC + NumDispositivosMTC
-#print("Número Total Dispositivos: ", Num_Total_Dispositivos)
-if  Num_Total_Dispositivos < 48:
-    Numero_clusters = Num_Total_Dispositivos
-elif Num_Total_Dispositivos >= 48:
-    Numero_clusters = 48
+#NumTotalDispositivos = 192
+#NumDispositivosURLLC = round((NumTotalDispositivos) / 4)
+#NumDispositivosMTC = round(NumTotalDispositivos - (NumTotalDispositivos) / 4)
 
+#print("Número Total Dispositivos: ", NumTotalDispositivos)
+
+# REGLAS
+
+def ReglasMultitone(Num_Total_Dispositivos):
+    if kmax==1:
+       if  Num_Total_Dispositivos < 48 :
+           return Num_Total_Dispositivos
+       elif Num_Total_Dispositivos >= 48:
+           return 48
+
+    elif kmax==2:
+       if  Num_Total_Dispositivos <= 48 :
+           return Num_Total_Dispositivos
+       elif Num_Total_Dispositivos > 48 and Num_Total_Dispositivos <96:
+           return mth.ceil(Num_Total_Dispositivos/2)
+       elif Num_Total_Dispositivos >= 96:
+           return 48
+
+    elif kmax==3:
+       if  Num_Total_Dispositivos <= 48 :
+           return Num_Total_Dispositivos
+       elif Num_Total_Dispositivos > 48 and Num_Total_Dispositivos <=96:
+           return mth.ceil(Num_Total_Dispositivos/2)
+       elif Num_Total_Dispositivos > 96 and Num_Total_Dispositivos < 144:
+           return mth.ceil(Num_Total_Dispositivos / 3)
+       elif Num_Total_Dispositivos >= 144:
+           return 48
+
+    elif kmax==4:
+       if  Num_Total_Dispositivos <= 48 :
+           return Num_Total_Dispositivos
+       elif Num_Total_Dispositivos > 48 and Num_Total_Dispositivos <=96:
+           return mth.ceil(Num_Total_Dispositivos/2)
+       elif Num_Total_Dispositivos > 96 and Num_Total_Dispositivos <= 144:
+           return mth.ceil(Num_Total_Dispositivos / 3)
+       elif Num_Total_Dispositivos > 144 and Num_Total_Dispositivos < 192:
+           return mth.ceil(Num_Total_Dispositivos / 4)
+       elif Num_Total_Dispositivos >= 192:
+           return 48
+
+
+Numero_clusters = 48
+
+#Numero_clusters = ReglasMultitone(NumTotalDispositivos)
+
+#print("Número Clusters: ", Numero_clusters)
 #Creación de Objetos para la simulación
 DESsim = Simulacion(0, PLE, RadioCelular)
 NBIoT = NB_IoT(48, [], [], [], [], Numero_clusters, [], int(NumDispositivosURLLC), [], int(NumDispositivosMTC), [], 0, [], kmax, BW_subportadoraNBIoT, Potencia_ruidoTermico)
@@ -423,7 +469,10 @@ def usuariosSatisfechos(ListaClusters):
                         else: contadorM = contadorM + 1
 
     #print("Usuarios con tasas satisfechas: ", contadorUsuarios, " URLLC: ", contadorU, " MTC: ", contadorM, " Sum Rate: ", sumRate)
-    print(sumRate)
+    #print(sumRate)
+    print(contadorM, ",", contadorU)
+
+    #print(contadorUsuarios)
 
 AlgoritmoAgrupacionNOMA()
 AlgoritmoAsignacionRecursos()

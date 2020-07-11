@@ -15,19 +15,19 @@ def creardispositivos(numeroDispositivos, tipo, PLE, radio_celula, numeroSubport
         # Usuarios uniformemente distribuidos dentro de la celda entre .1 a 500m
         # Calculo de distancia del UE a la BS
         d = mth.sqrt(np.random.uniform(0, 1) * (radio_celula ** 2))
-        d0 = 1
+        #d0 = 1
 
-        subcarriers=np.linspace(2000e6, 2000180000, numeroSubportadoras) #48 subportadoras en frecuencia de 2Ghz
+        #subcarriers=np.linspace(2000e6, 2000180000, numeroSubportadoras) #48 subportadoras en frecuencia de 2Ghz
 
         for gain in range(0, numeroSubportadoras):
             #Implementacion de desvanecimiento tipo Rayleigh
-            #rayleighGain = random.expovariate(1)
-            #h.append((d ** (-PLE)) * rayleighGain)
+            rayleighGain = random.expovariate(1)
+            h.append((d ** (-PLE)) * rayleighGain)
 
             #Implementacion Modelo de Canal Rappaport
 
-            h1 = 32.4 + 10 * PLE * mth.log10(d / d0) + 20 * mth.log10(d0) + 20 * mth.log10(subcarriers[gain]/1e9) + 10 * mth.log10(random.expovariate(1))
-            h.append(10**(h1/10))
+            #h1 = 32.4 + 10 * PLE * mth.log10(d / d0) + 20 * mth.log10(d0) + 20 * mth.log10(subcarriers[gain]/1e9) + 10 * mth.log10(random.expovariate(1))
+            #h.append(10**(h1/10))
 
         h2 = sum(h)
 
