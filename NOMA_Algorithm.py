@@ -9,7 +9,7 @@ import sys
 
 # Variables de entrada
 RadioCelular = 500# Modelo válido en distancias NLoS en [61-1238] y con LoS en [60-930]
-PLE = 3 #2.9 con NloS y con LoS usar 2.0
+PLE = 2.9 #2.9 con NloS y con LoS usar 2.0
 BW_subportadoraNBIoT = 3.75e3
 Potencia_ruidoTermico = 5.012e-21
 
@@ -470,7 +470,8 @@ def usuariosSatisfechos(ListaClusters):
 
     #print("Usuarios con tasas satisfechas: ", contadorUsuarios, " URLLC: ", contadorU, " MTC: ", contadorM, " Sum Rate: ", sumRate)
     #print(sumRate)
-    print(contadorM, ",", contadorU)
+    print(contadorUsuarios)
+    #print(contadorM, ",", contadorU)
 
     #print(contadorUsuarios)
 
